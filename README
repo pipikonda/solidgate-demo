@@ -1,0 +1,18 @@
+
+Possible improvements:
+
+If a balance update is expected for a large number of users at once, you can implement a batch update.
+This will reduce the number of requests from the app to the database and thus decrease the update time.
+ You can implement a batch update using Hibernate tools like entityManager, or JdbcTemplate and native SQL.
+
+To understand if it's worth implementing a batch update, you can use standard Spring Boot metrics like Prometheus.
+Dashboards can be built with tools like Grafana.
+
+You should also consider that the balance we receive might already be outdated, and we might have already saved a more current version.
+Without changing the API contract, I would solve this as follows:
+
+Add a timestamp to indicate when the balance was updated.
+When receiving the data in the API, break it into independent events with fields userId, balance, timestamp.
+Send all events to a message broker, like Kafka.
+A consumer processes all events independently, additionally saving the balance update date.
+In the database, it may be necessary to implement optimistic locking for sequential event processing.
